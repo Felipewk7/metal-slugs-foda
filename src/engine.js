@@ -169,13 +169,28 @@ export class Game {
     }
 
     start() {
-        if (this.state === 'playing') return;
+        console.log("Game.start() called");
         this.state = 'playing';
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('game-over-screen').classList.add('hidden');
-        document.getElementById('victory-screen').classList.add('hidden');
+
+        // Hide all screens
+        const screens = ['start-screen', 'game-over-screen', 'victory-screen'];
+        screens.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+
+        // Reset game state
         this.player = new Player();
         this.cameraX = 0;
+        this.bullets = [];
+        this.enemyBullets = [];
+        this.items = [];
         this.initLevel();
+
+        // Reset HUD
+        document.getElementById('hp-val').innerText = this.player.hp;
+        document.getElementById('weapon-val').innerText = 'PISTOL';
+        document.getElementById('ammo-val').innerText = '∞';
+        document.getElementById('score-val').innerText = '0';
     }
 }

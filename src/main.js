@@ -15,21 +15,28 @@ function loop() {
 // Start loop
 loop();
 
-// Event listeners
+// Event listeners for Start
+const startMission = () => {
+    console.log("Starting mission... Current state:", game.state);
+    if (game.state === 'start' || game.state === 'gameover' || game.state === 'victory') {
+        game.start();
+    }
+};
+
 document.addEventListener('keydown', (e) => {
-    if (game.state === 'start' && e.code === 'KeyJ') {
-        game.start();
+    if (e.code === 'KeyJ') {
+        startMission();
     }
 });
 
-document.body.addEventListener('click', () => {
-    if (game.state === 'start') {
-        game.start();
-    }
+// Click on the entire screens container to start
+document.getElementById('screens').addEventListener('click', (e) => {
+    startMission();
 });
 
-document.getElementById('retry-btn').addEventListener('click', () => {
-    game.start();
+document.getElementById('retry-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    startMission();
 });
 
 document.getElementById('next-btn').addEventListener('click', () => {

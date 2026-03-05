@@ -15,15 +15,18 @@ export class Assets {
         this.toLoad++;
         const img = new Image();
         img.src = src;
-        img.onload = () => {
+        const onFinish = () => {
             this.loadedCount++;
+            console.log(`Loaded ${name}: ${this.loadedCount}/${this.toLoad}`);
             if (this.loadedCount === this.toLoad) {
                 this.loaded = true;
-                console.log('All assets loaded');
+                console.log('All assets processed');
             }
         };
+        img.onload = onFinish;
         img.onerror = () => {
             console.error('Failed to load asset:', name, src);
+            onFinish(); // Mark as finished even if failed to avoid blocking engine
         };
         this.images[name] = img;
     }
