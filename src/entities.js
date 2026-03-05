@@ -133,15 +133,19 @@ export class Player extends Entity {
     }
 
     draw(ctx) {
-        if (!assets.loaded) return;
+        if (!assets.loaded) {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            return;
+        }
         const img = assets.images.player;
 
         ctx.save();
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         if (this.facing === -1) ctx.scale(-1, 1);
 
-        // Draw sprite (simplified slicing)
-        ctx.drawImage(img, this.animationFrame * 64, 0, 64, 64, -this.width / 2, -this.height / 2, this.width, this.height);
+        // Draw whole image for now to ensure visibility
+        ctx.drawImage(img, 0, 0, img.width, img.height, -this.width / 2, -this.height / 2, this.width, this.height);
 
         ctx.restore();
     }
@@ -179,8 +183,12 @@ export class Enemy extends Entity {
     }
 
     draw(ctx) {
-        if (!assets.loaded) return;
+        if (!assets.loaded) {
+            ctx.fillStyle = this.type === 'tank' ? 'red' : 'green';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            return;
+        }
         const img = this.type === 'tank' ? assets.images.tank : assets.images.enemy;
-        ctx.drawImage(img, this.x, this.y, this.width, this.height);
+        ctx.drawImage(img, 0, 0, img.width, img.height, this.x, this.y, this.width, this.height);
     }
 }
