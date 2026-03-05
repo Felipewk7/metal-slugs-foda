@@ -16,23 +16,26 @@ function loop() {
 loop();
 
 // Event listeners for Start
-const startMission = () => {
-    console.log("Starting mission... Current state:", game.state);
-    if (game.state === 'start' || game.state === 'gameover' || game.state === 'victory') {
-        game.start();
-    }
+const startMission = (source) => {
+    console.log(`[MAIN] startMission triggered by ${source}. Current state: ${game.state}`);
+    // Forçar o start mesmo que o estado esteja estranho
+    game.start();
 };
 
 document.addEventListener('keydown', (e) => {
     if (e.code === 'KeyJ') {
-        startMission();
+        startMission('Keyboard J');
     }
 });
 
 // Click on the entire screens container to start
-document.getElementById('screens').addEventListener('click', (e) => {
-    startMission();
-});
+const screensEl = document.getElementById('screens');
+if (screensEl) {
+    screensEl.style.cursor = 'pointer'; // Feedback visual
+    screensEl.addEventListener('click', (e) => {
+        startMission('Mouse Click');
+    });
+}
 
 document.getElementById('retry-btn').addEventListener('click', (e) => {
     e.stopPropagation();

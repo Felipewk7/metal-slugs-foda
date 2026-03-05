@@ -1,8 +1,3 @@
-import playerImg from './player.png';
-import enemyImg from './enemy.png';
-import tankImg from './tank.png';
-import backgroundImg from './background.png';
-
 export class Assets {
     constructor() {
         this.images = {};
@@ -11,31 +6,39 @@ export class Assets {
         this.loadedCount = 0;
     }
 
-    load(name, src) {
+    load(name, filename) {
         this.toLoad++;
         const img = new Image();
-        img.src = src;
+
+        // Determinar path correto (Vite dev vs GitHub Pages)
+        const isGithub = window.location.hostname.includes('github.io');
+        const basePath = isGithub ? '/metal-slugs-foda/src/' : './';
+
+        img.src = basePath + filename;
+
         const onFinish = () => {
             this.loadedCount++;
-            console.log(`Loaded ${name}: ${this.loadedCount}/${this.toLoad}`);
+            console.log(`[ASSETS] ${name} loaded (${this.loadedCount}/${this.toLoad})`);
             if (this.loadedCount === this.toLoad) {
                 this.loaded = true;
-                console.log('All assets processed');
+                console.log('[ASSETS] Ready.');
             }
         };
+
         img.onload = onFinish;
         img.onerror = () => {
-            console.error('Failed to load asset:', name, src);
-            onFinish(); // Mark as finished even if failed to avoid blocking engine
+            console.error(`[ASSETS] FAILED to load ${name} at ${img.src}`);
+            onFinish();
         };
         this.images[name] = img;
     }
 
     init() {
-        this.load('player', playerImg);
-        this.load('enemy', enemyImg);
-        this.load('tank', tankImg);
-        this.load('background', backgroundImg);
+        console.log('[ASSETS] Initializing...');
+        this.load('player', 'player.png');
+        this.load('enemy', 'enemy.png');
+        this.load('tank', 'tank.png');
+        this.load('background', 'background.png');
     }
 }
 
