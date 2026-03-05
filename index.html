@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myasma: Metal Protocol</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-layer">
+            <div id="hud">
+                <div class="stat">HP: <span id="hp-val">100</span></div>
+                <div class="stat">WEAPON: <span id="weapon-val">PISTOL</span></div>
+                <div class="stat">AMMO: <span id="ammo-val">∞</span></div>
+                <div class="stat">SCORE: <span id="score-val">0</span></div>
+            </div>
+            <div id="screens">
+                <div id="start-screen" class="screen">
+                    <h1 class="glitch" data-text="MYASMA: METAL PROTOCOL">MYASMA: METAL PROTOCOL</h1>
+                    <p>PRESS J OR CLICK TO START MISSION</p>
+                    <div class="controls-hint">
+                        A/D: Move | W: Jump | J: Fire | K: Grenade
+                    </div>
+                </div>
+                <div id="game-over-screen" class="screen hidden">
+                    <h1>MISSION FAILED</h1>
+                    <button id="retry-btn">RETRY</button>
+                </div>
+                <div id="victory-screen" class="screen hidden">
+                    <h1>MISSION COMPLETE</h1>
+                    <p>RANK: S</p>
+                    <button id="next-btn">NEXT MISSION</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
