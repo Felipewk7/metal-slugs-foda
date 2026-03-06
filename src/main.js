@@ -40,7 +40,8 @@ if (screensEl) {
 
 document.getElementById('retry-btn').addEventListener('click', (e) => {
     e.stopPropagation();
-    startMission();
+    e.target.blur(); // Remove foco para evitar trigger acidental
+    startMission('Retry Button');
 });
 
 document.getElementById('next-btn').addEventListener('click', () => {

@@ -126,7 +126,8 @@ export class Player extends Entity {
 
         // Animation
         this.animationTimer++;
-        if (this.animationTimer > 10) {
+        const animSpeed = Math.abs(this.vx) > 0.1 ? 6 : 12; // Mais rápido ao correr
+        if (this.animationTimer > animSpeed) {
             this.animationFrame = (this.animationFrame + 1) % 4;
             this.animationTimer = 0;
         }
@@ -144,12 +145,18 @@ export class Player extends Entity {
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         if (this.facing === -1) ctx.scale(-1, 1);
 
-        // Garantir que a imagem é tratada como uma grade de 4x4
         const frameW = img.width / 4;
         const frameH = img.height / 4;
 
+        // Lógica de Linhas: 0: Idle, 1: Running, 2: Shooting, 3: Jumping
         let row = 0;
-        if (Math.abs(this.vx) > 0.1) row = 1; // Usar a segunda linha para correr
+        if (!this.grounded) {
+            row = 3;
+        } else if (Date.now() - this.lastShot < 200) {
+            row = 2;
+        } else if (Math.abs(this.vx) > 0.1) {
+            row = 1;
+        }
 
         ctx.drawImage(
             img,
@@ -212,14 +219,20 @@ export class Enemy extends Entity {
         if (this.type === 'tank') {
             ctx.drawImage(img, 0, 0, img.width, img.height, this.x, this.y, this.width, this.height);
         } else {
-            // Slicing para inimigo soldado
             const frameW = img.width / 4;
             const frameH = img.height / 4;
-            let row = Math.abs(this.vx) > 0.1 ? 1 : 0;
+
+            // Lógica Inimigo: 0: Idle, 1: Walk, 2: Shoot
+            let row = 0;
+            if (Date.now() - this.lastShot < 300) {
+                row = 2;
+            } else if (Math.abs(this.vx) > 0.1) {
+                row = 1;
+            }
 
             ctx.save();
             ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-            if (this.vx > 0) ctx.scale(-1, 1); // Flip se mover pra direita
+            if (this.vx > 0) ctx.scale(-1, 1);
 
             ctx.drawImage(
                 img,
