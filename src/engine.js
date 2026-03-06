@@ -105,24 +105,32 @@ export class Game {
                 if (b.x < en.x + en.width && b.x + b.width > en.x && b.y < en.y + en.height && b.y + b.height > en.y) {
                     en.hp -= b.damage;
                     this.bullets.splice(bi, 1);
-                    if (en.hp <= 0) {
-                        en.dead = true;
+                    if (en.hp <= 0 && !en.dying) {
+                        en.dying = true;
+                        en.vx = 0; // Para de mover ao morrer
                         this.player.score += en.type === 'tank' ? 1000 : 100;
                     }
                 }
             });
         });
 
+        // Filtrar apenas quem realmente sumiu (dead = true após animação)
         this.enemies = this.enemies.filter(en => !en.dead);
 
         // Enemy Bullet - Player Collision
         this.enemyBullets.forEach((b, bi) => {
             if (b.x < this.player.x + this.player.width && b.x + b.width > this.player.x && b.y < this.player.y + this.player.height && b.y + b.height > this.player.y) {
-                this.player.hp -= 10;
-                this.enemyBullets.splice(bi, 1);
-                if (this.player.hp <= 0) {
-                    this.state = 'gameover';
-                    document.getElementById('game-over-screen').classList.remove('hidden');
+                if (!this.player.dying) {
+                    this.player.hp -= 10;
+                    this.enemyBullets.splice(bi, 1);
+                    if (this.player.hp <= 0) {
+                        this.player.dying = true;
+                        this.player.vx = 0;
+                        setTimeout(() => {
+                            this.state = 'gameover';
+                            document.getElementById('game-over-screen').classList.remove('hidden');
+                        }, 1000);
+                    }
                 }
             }
         });

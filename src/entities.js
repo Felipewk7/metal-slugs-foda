@@ -9,15 +9,18 @@ export class Entity {
         this.vx = 0;
         this.vy = 0;
         this.dead = false;
+        this.dying = false;
+        this.deathTimer = 0;
     }
 
     update() {
+        if (this.dying) {
+            this.deathTimer++;
+            if (this.deathTimer > 60) this.dead = true;
+            return;
+        }
         this.x += this.vx;
         this.y += this.vy;
-    }
-
-    draw(ctx) {
-        // Placeholder or sprite
     }
 }
 
@@ -70,7 +73,6 @@ export class Bullet extends Entity {
     draw(ctx) {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
-        // Glow effect
         ctx.shadowBlur = 10;
         ctx.shadowColor = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -80,14 +82,14 @@ export class Bullet extends Entity {
 
 export class Player extends Entity {
     constructor() {
-        super(100, 400, 48, 64);
+        super(100, 400, 64, 64);
         this.hp = 100;
         this.maxHp = 100;
         this.grounded = false;
         this.weapon = 'pistol';
         this.ammo = Infinity;
         this.score = 0;
-        this.facing = 1; // 1 for right, -1 for left
+        this.facing = 1;
         this.inVehicle = false;
         this.vehicle = null;
         this.lastShot = 0;
@@ -96,7 +98,11 @@ export class Player extends Entity {
     }
 
     update(input, levelWidth) {
-        // Physics
+        if (this.dying) {
+            super.update();
+            return;
+        }
+
         const gravity = 0.5;
         this.vy += gravity;
 
@@ -114,19 +120,16 @@ export class Player extends Entity {
 
         super.update();
 
-        // Floor collision (simple)
         if (this.y > 450) {
             this.y = 450;
             this.vy = 0;
             this.grounded = true;
         }
 
-        // Screen constraints (no backtracking)
         if (this.x < 0) this.x = 0;
 
-        // Animation
         this.animationTimer++;
-        const animSpeed = Math.abs(this.vx) > 0.1 ? 6 : 12; // Mais rápido ao correr
+        const animSpeed = Math.abs(this.vx) > 0.1 ? 6 : 12;
         if (this.animationTimer > animSpeed) {
             this.animationFrame = (this.animationFrame + 1) % 4;
             this.animationTimer = 0;
@@ -134,35 +137,26 @@ export class Player extends Entity {
     }
 
     draw(ctx) {
-        if (!assets.loaded) {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-            return;
-        }
+        if (!assets.loaded) return;
         const img = assets.images.player;
 
         ctx.save();
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         if (this.facing === -1) ctx.scale(-1, 1);
 
-        // Grid Slicing 4x4
         const frameW = img.width / 4;
         const frameH = img.height / 4;
 
-        // Linhas: 0: Idle, 1: Run, 2: Shoot, 3: Jump
         let row = 0;
-        if (!this.grounded) row = 3;
-        else if (Date.now() - this.lastShot < 200) row = 2;
-        else if (Math.abs(this.vx) > 0.1) row = 1;
-
-        // Ajuste de escala para o boneco não ficar "achatado"
-        const drawW = 64;
-        const drawH = 64;
+        if (this.dying) row = 3; // Morte
+        else if (!this.grounded) row = 3; // Pulo (usando a mesma linha de morte/pulo conforme sugerido pelo prompt da IA)
+        else if (Date.now() - this.lastShot < 200) row = 2; // Atirando
+        else if (Math.abs(this.vx) > 0.1) row = 1; // Correndo
 
         ctx.drawImage(
             img,
             this.animationFrame * frameW, row * frameH, frameW, frameH,
-            -drawW / 2, -drawH / 2, drawW, drawH
+            -this.width / 2, -this.height / 2, this.width, this.height
         );
 
         ctx.restore();
@@ -171,10 +165,10 @@ export class Player extends Entity {
 
 export class Enemy extends Entity {
     constructor(x, y, type = 'soldier') {
-        super(x, y, 48, 64);
+        super(x, y, 64, 64);
         this.type = type;
         this.hp = type === 'tank' ? 500 : 20;
-        this.vx = 0; // Initialize vx
+        this.vx = 0;
         this.lastShot = 0;
         this.shootInterval = type === 'tank' ? 2000 : 1500;
         this.animationFrame = 0;
@@ -182,6 +176,11 @@ export class Enemy extends Entity {
     }
 
     update(playerX) {
+        if (this.dying) {
+            super.update();
+            return;
+        }
+
         if (this.type === 'soldier') {
             const dist = playerX - this.x;
             if (Math.abs(dist) > 200) {
@@ -192,14 +191,12 @@ export class Enemy extends Entity {
         }
         super.update();
 
-        // Animation
         this.animationTimer++;
         if (this.animationTimer > 12) {
             this.animationFrame = (this.animationFrame + 1) % 4;
             this.animationTimer = 0;
         }
 
-        // Gravity
         if (this.type !== 'turret') {
             this.vy += 0.5;
             if (this.y > 450) {
@@ -210,11 +207,7 @@ export class Enemy extends Entity {
     }
 
     draw(ctx) {
-        if (!assets.loaded) {
-            ctx.fillStyle = this.type === 'tank' ? 'red' : 'green';
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-            return;
-        }
+        if (!assets.loaded) return;
         const img = this.type === 'tank' ? assets.images.tank : assets.images.enemy;
 
         if (this.type === 'tank') {
@@ -223,16 +216,10 @@ export class Enemy extends Entity {
             const frameW = img.width / 4;
             const frameH = img.height / 4;
 
-            // Lógica Inimigo: 0: Idle, 1: Walk, 2: Shoot
             let row = 0;
-            if (Date.now() - this.lastShot < 300) {
-                row = 2;
-            } else if (Math.abs(this.vx) > 0.1) {
-                row = 1;
-            }
-
-            const drawW = 64;
-            const drawH = 64;
+            if (this.dying) row = 3;
+            else if (Date.now() - this.lastShot < 300) row = 2;
+            else if (Math.abs(this.vx) > 0.1) row = 1;
 
             ctx.save();
             ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
@@ -241,7 +228,7 @@ export class Enemy extends Entity {
             ctx.drawImage(
                 img,
                 this.animationFrame * frameW, row * frameH, frameW, frameH,
-                -drawW / 2, -drawH / 2, drawW, drawH
+                -this.width / 2, -this.height / 2, this.width, this.height
             );
             ctx.restore();
         }
