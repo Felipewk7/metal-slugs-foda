@@ -18,15 +18,14 @@ loop();
 // Event listeners for Start
 const startMission = (source) => {
     console.log(`[MAIN] startMission attempt by ${source}. Current state: ${game.state}`);
-    // SÓ inicia se não estiver jogando para evitar o bug do J reiniciar o jogo
     if (game.state !== 'playing') {
         game.start();
     }
 };
 
 document.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyJ') {
-        startMission('Keyboard J');
+    if (e.code === 'Enter') {
+        startMission('Keyboard Enter');
     }
 });
 

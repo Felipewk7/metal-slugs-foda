@@ -144,20 +144,17 @@ export class Player extends Entity {
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         if (this.facing === -1) ctx.scale(-1, 1);
 
-        // Grid Slicing (Assume 4x4 ou similar)
-        const cols = 4;
-        const rows = 4;
-        const frameW = img.width / cols;
-        const frameH = img.height / rows;
+        // Garantir que a imagem é tratada como uma grade de 4x4
+        const frameW = img.width / 4;
+        const frameH = img.height / 4;
 
-        // Selecionar linha baseado no estado (0: Idle, 1: Run, 2: Shoot, etc)
         let row = 0;
-        if (Math.abs(this.vx) > 0.1) row = 1;
+        if (Math.abs(this.vx) > 0.1) row = 1; // Usar a segunda linha para correr
 
         ctx.drawImage(
             img,
-            this.animationFrame * frameW, row * frameH, frameW, frameH, // Source
-            -this.width / 2, -this.height / 2, this.width, this.height // Destination
+            this.animationFrame * frameW, row * frameH, frameW, frameH,
+            -this.width / 2, -this.height / 2, this.width, this.height
         );
 
         ctx.restore();
