@@ -144,8 +144,21 @@ export class Player extends Entity {
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         if (this.facing === -1) ctx.scale(-1, 1);
 
-        // Draw whole image for now to ensure visibility
-        ctx.drawImage(img, 0, 0, img.width, img.height, -this.width / 2, -this.height / 2, this.width, this.height);
+        // Grid Slicing (Assume 4x4 ou similar)
+        const cols = 4;
+        const rows = 4;
+        const frameW = img.width / cols;
+        const frameH = img.height / rows;
+
+        // Selecionar linha baseado no estado (0: Idle, 1: Run, 2: Shoot, etc)
+        let row = 0;
+        if (Math.abs(this.vx) > 0.1) row = 1;
+
+        ctx.drawImage(
+            img,
+            this.animationFrame * frameW, row * frameH, frameW, frameH, // Source
+            -this.width / 2, -this.height / 2, this.width, this.height // Destination
+        );
 
         ctx.restore();
     }
@@ -156,13 +169,15 @@ export class Enemy extends Entity {
         super(x, y, 48, 64);
         this.type = type;
         this.hp = type === 'tank' ? 500 : 20;
+        this.vx = 0; // Initialize vx
         this.lastShot = 0;
         this.shootInterval = type === 'tank' ? 2000 : 1500;
+        this.animationFrame = 0;
+        this.animationTimer = 0;
     }
 
     update(playerX) {
         if (this.type === 'soldier') {
-            // Move towards player if far, then shoot
             const dist = playerX - this.x;
             if (Math.abs(dist) > 200) {
                 this.vx = Math.sign(dist) * 2;
@@ -171,6 +186,13 @@ export class Enemy extends Entity {
             }
         }
         super.update();
+
+        // Animation
+        this.animationTimer++;
+        if (this.animationTimer > 12) {
+            this.animationFrame = (this.animationFrame + 1) % 4;
+            this.animationTimer = 0;
+        }
 
         // Gravity
         if (this.type !== 'turret') {
@@ -189,6 +211,25 @@ export class Enemy extends Entity {
             return;
         }
         const img = this.type === 'tank' ? assets.images.tank : assets.images.enemy;
-        ctx.drawImage(img, 0, 0, img.width, img.height, this.x, this.y, this.width, this.height);
+
+        if (this.type === 'tank') {
+            ctx.drawImage(img, 0, 0, img.width, img.height, this.x, this.y, this.width, this.height);
+        } else {
+            // Slicing para inimigo soldado
+            const frameW = img.width / 4;
+            const frameH = img.height / 4;
+            let row = Math.abs(this.vx) > 0.1 ? 1 : 0;
+
+            ctx.save();
+            ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+            if (this.vx > 0) ctx.scale(-1, 1); // Flip se mover pra direita
+
+            ctx.drawImage(
+                img,
+                this.animationFrame * frameW, row * frameH, frameW, frameH,
+                -this.width / 2, -this.height / 2, this.width, this.height
+            );
+            ctx.restore();
+        }
     }
 }

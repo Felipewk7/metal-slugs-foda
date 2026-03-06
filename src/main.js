@@ -17,9 +17,11 @@ loop();
 
 // Event listeners for Start
 const startMission = (source) => {
-    console.log(`[MAIN] startMission triggered by ${source}. Current state: ${game.state}`);
-    // Forçar o start mesmo que o estado esteja estranho
-    game.start();
+    console.log(`[MAIN] startMission attempt by ${source}. Current state: ${game.state}`);
+    // SÓ inicia se não estiver jogando para evitar o bug do J reiniciar o jogo
+    if (game.state !== 'playing') {
+        game.start();
+    }
 };
 
 document.addEventListener('keydown', (e) => {
