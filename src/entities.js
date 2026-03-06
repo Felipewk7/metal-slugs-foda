@@ -145,23 +145,24 @@ export class Player extends Entity {
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         if (this.facing === -1) ctx.scale(-1, 1);
 
+        // Grid Slicing 4x4
         const frameW = img.width / 4;
         const frameH = img.height / 4;
 
-        // Lógica de Linhas: 0: Idle, 1: Running, 2: Shooting, 3: Jumping
+        // Linhas: 0: Idle, 1: Run, 2: Shoot, 3: Jump
         let row = 0;
-        if (!this.grounded) {
-            row = 3;
-        } else if (Date.now() - this.lastShot < 200) {
-            row = 2;
-        } else if (Math.abs(this.vx) > 0.1) {
-            row = 1;
-        }
+        if (!this.grounded) row = 3;
+        else if (Date.now() - this.lastShot < 200) row = 2;
+        else if (Math.abs(this.vx) > 0.1) row = 1;
+
+        // Ajuste de escala para o boneco não ficar "achatado"
+        const drawW = 64;
+        const drawH = 64;
 
         ctx.drawImage(
             img,
             this.animationFrame * frameW, row * frameH, frameW, frameH,
-            -this.width / 2, -this.height / 2, this.width, this.height
+            -drawW / 2, -drawH / 2, drawW, drawH
         );
 
         ctx.restore();
@@ -230,6 +231,9 @@ export class Enemy extends Entity {
                 row = 1;
             }
 
+            const drawW = 64;
+            const drawH = 64;
+
             ctx.save();
             ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
             if (this.vx > 0) ctx.scale(-1, 1);
@@ -237,7 +241,7 @@ export class Enemy extends Entity {
             ctx.drawImage(
                 img,
                 this.animationFrame * frameW, row * frameH, frameW, frameH,
-                -this.width / 2, -this.height / 2, this.width, this.height
+                -drawW / 2, -drawH / 2, drawW, drawH
             );
             ctx.restore();
         }
